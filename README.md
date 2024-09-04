@@ -1,70 +1,51 @@
-## Foundry
+# Gift Card Smart Contract
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This repository contains the smart contract implementation for a decentralized gift card system on the Ethereum blockchain.
 
-Foundry consists of:
+## Features
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+- Single and multi-recipient gift cards
+- Token-based gifts
+- Customizable expiration times
+- Personalized messages and themes
+- Fixed and random distribution for multi-recipient gifts
 
-## Documentation
+## Getting Started
 
-https://book.getfoundry.sh/
+### Prerequisites
 
-## Usage
+- [Foundry](https://book.getfoundry.sh/getting-started/installation)
+- [Solidity](https://docs.soliditylang.org/en/v0.8.24/)
 
-### Build
+### Installation
 
-```shell
-$ forge build
+1. Clone the repository:
+
+   ```
+   git clone https://github.com/haya-finance/gift-card-smart-contract.git
+   ```
+
+2. Install dependencies:
+   ```
+   git submodule update --init --recursive
+   ```
+
+### Building
+
+Compile the smart contracts:
+
+```
+forge build
 ```
 
-### Test
+### Testing
 
-```shell
-$ forge test
+Run the tests:
+
+```
+forge test
 ```
 
-### Format
+## License
 
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
-
-### Init
-
-git submodule update --init --recursive
+This project is licensed under the MIT License. See the `LICENSE` file for more details.
