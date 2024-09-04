@@ -128,6 +128,18 @@ contract SingleGiftCardCenterTest is Test {
         giftCardCenter.claimGift(giftId, bob);
     }
 
+    function testEmergencyWithdraw() public {
+        _createGiftCard();
+        giftCardCenter.emergencyWithdraw(address(gasToken), bob, 10 ether);
+        assertEq(gasToken.balanceOf(bob), 10 ether, "bob should have 10 ether");
+    }
+
+    function testFailEmergencyWithdraw() public {
+        _createGiftCard();
+        vm.prank(alice);
+        giftCardCenter.emergencyWithdraw(address(gasToken), bob, 10 ether);
+    }
+
     function _createGiftCard() internal returns (bytes32) {
         deal(address(gasToken), alice, 1000 ether);
         vm.prank(alice);
