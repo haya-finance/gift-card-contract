@@ -8,12 +8,12 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IGasOracle} from "./interfaces/IGasOracle.sol";
 import {ITokenValidators} from "./interfaces/ITokenValidators.sol";
-import {MutilGift, MutilGiftClaimInfo, GiftCardLib, DividendType, GasPaid, GiftStatus} from "./lib/GiftCardLib.sol";
+import {MultiGift, MultiGiftClaimInfo, GiftCardLib, DividendType, GasPaid, GiftStatus} from "./lib/GiftCardLib.sol";
 import {Constants} from "./lib/Constants.sol";
 import "./lib/Error.sol";
 
 contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
-    using GiftCardLib for MutilGift;
+    using GiftCardLib for MultiGift;
     using SafeERC20 for IERC20;
 
     /// @notice Address of the gas oracle contract
@@ -21,10 +21,10 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
     /// @notice Address of the token validators contract
     address public tokenValidators;
 
-    /// @notice Mapping of gift IDs to MutilGift structs
-    mapping(bytes32 => MutilGift) public mutilGifts;
-    /// @notice Mapping of gift IDs to MutilGiftClaimInfo structs
-    mapping(bytes32 => MutilGiftClaimInfo) public mutilGiftClaimInfos;
+    /// @notice Mapping of gift IDs to MultiGift structs
+    mapping(bytes32 => MultiGift) public MultiGifts;
+    /// @notice Mapping of gift IDs to MultiGiftClaimInfo structs
+    mapping(bytes32 => MultiGiftClaimInfo) public MultiGiftClaimInfos;
     /// @notice Mapping of gift IDs to GasPaid structs
     mapping(bytes32 => GasPaid) public gasPaids;
     /// @notice Mapping of code hashes to arrays of gift IDs
@@ -33,8 +33,8 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
     /// @notice Emitted when a new code gift is created
     /// @param giftId The unique identifier of the gift
     /// @param codeHash The hash of the gift code
-    /// @param gift The MutilGift struct containing gift details
-    event CodeGiftCreated(bytes32 indexed giftId, bytes32 indexed codeHash, MutilGift gift);
+    /// @param gift The MultiGift struct containing gift details
+    event CodeGiftCreated(bytes32 indexed giftId, bytes32 indexed codeHash, MultiGift gift);
 
     /// @notice Emitted when a code gift is claimed
     /// @param giftId The unique identifier of the gift
@@ -107,8 +107,8 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         if (giftId == bytes32(0)) {
             revert GiftIdNotExists();
         }
-        MutilGift memory gift = mutilGifts[giftId];
-        MutilGiftClaimInfo storage claimInfo = mutilGiftClaimInfos[giftId];
+        MultiGift memory gift = MultiGifts[giftId];
+        MultiGiftClaimInfo storage claimInfo = MultiGiftClaimInfos[giftId];
         _checkGiftClaimAvailable(_account, _claimAmount, gift, claimInfo);
 
         claimInfo.claimInfos[_account].claimedAmount = _claimAmount;
@@ -124,8 +124,8 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
      * @param _giftId The unique identifier of the gift to be refunded.
      */
     function refundGift(bytes32 _giftId) external whenNotPaused nonReentrant {
-        MutilGift memory gift = mutilGifts[_giftId];
-        MutilGiftClaimInfo storage claimInfo = mutilGiftClaimInfos[_giftId];
+        MultiGift memory gift = MultiGifts[_giftId];
+        MultiGiftClaimInfo storage claimInfo = MultiGiftClaimInfos[_giftId];
 
         _checkGiftRefundAvailable(msg.sender, gift, claimInfo);
 
@@ -143,10 +143,10 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
     /**
      * @dev Retrieves the gift information for a given gift ID.
      * @param _giftId The unique identifier of the gift.
-     * @return The MutilGift struct containing the gift information.
+     * @return The MultiGift struct containing the gift information.
      */
-    function getMutilGift(bytes32 _giftId) public view returns (MutilGift memory) {
-        return mutilGifts[_giftId];
+    function getMultiGift(bytes32 _giftId) public view returns (MultiGift memory) {
+        return MultiGifts[_giftId];
     }
 
     /**
@@ -156,12 +156,12 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
      * @return totalClaimedAmount The total amount that has been claimed from the gift.
      * @return status The current status of the gift.
      */
-    function getMutilGiftClaimInfo(bytes32 _giftId)
+    function getMultiGiftClaimInfo(bytes32 _giftId)
         public
         view
         returns (uint256 totalClaimedCount, uint256 totalClaimedAmount, GiftStatus status)
     {
-        MutilGiftClaimInfo storage info = mutilGiftClaimInfos[_giftId];
+        MultiGiftClaimInfo storage info = MultiGiftClaimInfos[_giftId];
         return (info.totalClaimedCount, info.totalClaimedAmount, info.status);
     }
 
@@ -177,7 +177,7 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         view
         returns (uint256 claimedAmount, uint256 claimedTimestamp)
     {
-        MutilGiftClaimInfo storage info = mutilGiftClaimInfos[_giftId];
+        MultiGiftClaimInfo storage info = MultiGiftClaimInfos[_giftId];
         return (info.claimInfos[_account].claimedAmount, info.claimInfos[_account].claimedTimestamp);
     }
 
@@ -191,7 +191,7 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         if (giftId == bytes32(0)) {
             return true;
         }
-        MutilGift memory gift = mutilGifts[giftId];
+        MultiGift memory gift = MultiGifts[giftId];
         if (gift.expireTime + Constants.REFUND_DURATION_AFTER_EXPIRED < block.timestamp) {
             return true;
         }
@@ -313,8 +313,8 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
     function _checkGiftClaimAvailable(
         address _account,
         uint256 _claimAmount,
-        MutilGift memory _gift,
-        MutilGiftClaimInfo storage _claimInfo
+        MultiGift memory _gift,
+        MultiGiftClaimInfo storage _claimInfo
     ) internal view {
         if (_gift.expireTime + Constants.REFUND_DURATION_AFTER_EXPIRED < block.timestamp) {
             revert GiftCardExpired();
@@ -341,7 +341,7 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
      * 3. The gift must not be fully claimed.
      * 4. The gift must not have been refunded already.
      */
-    function _checkGiftRefundAvailable(address _sender, MutilGift memory _gift, MutilGiftClaimInfo storage _claimInfo)
+    function _checkGiftRefundAvailable(address _sender, MultiGift memory _gift, MultiGiftClaimInfo storage _claimInfo)
         internal
         view
     {
@@ -426,7 +426,7 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         if (postBal - prevBal < _amount) {
             revert TransferFailed();
         }
-        MutilGift memory gift = MutilGift({
+        MultiGift memory gift = MultiGift({
             sender: _sender,
             token: _token,
             amount: _amount,
@@ -438,11 +438,11 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
             message: _message
         });
         bytes32 giftId = gift.getCodeGiftId(_codeHash);
-        if (mutilGifts[giftId].sender != address(0)) {
+        if (MultiGifts[giftId].sender != address(0)) {
             revert GiftIdAlreadyInUse();
         }
 
-        mutilGifts[giftId] = gift;
+        MultiGifts[giftId] = gift;
 
         _addGiftCodePair(_codeHash, giftId);
         gasPaids[giftId] = GasPaid(gasToken, gasPrice);

@@ -6,7 +6,7 @@ import {CodeGiftCardCenter} from "../src/CodeGiftCardCenter.sol";
 import {GasOracle} from "../src/GasOracle.sol";
 import {TokenValidators} from "../src/TokenValidators.sol";
 import {StandardTokenMock} from "../src/mock/StandardTokenMock.sol";
-import {MutilGift, MutilGiftClaimInfo, DividendType, GiftStatus} from "../src/lib/GiftCardLib.sol";
+import {MultiGift, MultiGiftClaimInfo, DividendType, GiftStatus} from "../src/lib/GiftCardLib.sol";
 import "../src/lib/Error.sol";
 
 contract CodeGiftCardCenterTest is Test {
@@ -56,7 +56,7 @@ contract CodeGiftCardCenterTest is Test {
         );
         assertEq(gasToken.balanceOf(alice), 1000 ether - 10 ether - 5 ether * 100, "deployer should have 490 ether");
 
-        MutilGift memory gift = giftCardCenter.getMutilGift(giftId);
+        MultiGift memory gift = giftCardCenter.getMultiGift(giftId);
         assertEq(gift.sender, alice, "sender should be alice");
         assertEq(gift.token, address(gasToken), "token should be gasToken");
         assertEq(gift.amount, 10 ether, "amount should be 10 ether");
@@ -74,7 +74,7 @@ contract CodeGiftCardCenterTest is Test {
         giftCardCenter.claimGift(defaultCodeHash, bob, 10 ether);
 
         (uint256 totalClaimedCount, uint256 totalClaimedAmount, GiftStatus status) =
-            giftCardCenter.getMutilGiftClaimInfo(giftId);
+            giftCardCenter.getMultiGiftClaimInfo(giftId);
         assertEq(totalClaimedCount, 1, "totalClaimedCount should be 1");
         assertEq(totalClaimedAmount, 10 ether, "totalClaimedAmount should be 10 ether");
         assertEq(uint256(status), uint256(GiftStatus.None), "GiftStatus should be None");
@@ -82,13 +82,13 @@ contract CodeGiftCardCenterTest is Test {
 
     function testRefundGiftCard() public {
         bytes32 giftId = _createGiftCard(defaultCodeHash);
-        MutilGift memory gift = giftCardCenter.getMutilGift(giftId);
+        MultiGift memory gift = giftCardCenter.getMultiGift(giftId);
         vm.warp(gift.expireTime + 1 days + 1);
         vm.prank(alice);
         giftCardCenter.refundGift(giftId);
         assertEq(gasToken.balanceOf(alice), 10000 ether, "alice should have 10000 ether");
         (uint256 totalClaimedCount, uint256 totalClaimedAmount, GiftStatus status) =
-            giftCardCenter.getMutilGiftClaimInfo(giftId);
+            giftCardCenter.getMultiGiftClaimInfo(giftId);
         assertEq(uint256(status), uint256(GiftStatus.Refunded), "isRefunded should be true");
         assertEq(totalClaimedCount, 0, "totalClaimedCount should be 0");
         assertEq(totalClaimedAmount, 0, "totalClaimedAmount should be 0");
@@ -107,14 +107,14 @@ contract CodeGiftCardCenterTest is Test {
 
     function testRecreateGiftAfterLastGiftHasBeenExpired() public {
         bytes32 giftId = _createGiftCard(defaultCodeHash);
-        MutilGift memory gift = giftCardCenter.getMutilGift(giftId);
+        MultiGift memory gift = giftCardCenter.getMultiGift(giftId);
         vm.warp(gift.expireTime + 1 days + 1);
         _createGiftCard(defaultCodeHash);
     }
 
     function testAfterExpiredRefundAndCodeHashRecreated() public {
         bytes32 giftId = _createGiftCard(defaultCodeHash);
-        MutilGift memory gift = giftCardCenter.getMutilGift(giftId);
+        MultiGift memory gift = giftCardCenter.getMultiGift(giftId);
         vm.warp(gift.expireTime + 1 days + 1);
         _createGiftCard(defaultCodeHash);
         bytes32 lastGiftCodePair = giftCardCenter.getLastGiftCodePair(defaultCodeHash);
@@ -127,7 +127,7 @@ contract CodeGiftCardCenterTest is Test {
         uint256 afterRefundBalance = gasToken.balanceOf(alice);
         assertEq(afterRefundBalance, beforeRefundBalance + gift.amount + gasPaid, "alice should have 10 ether");
         (uint256 totalClaimedCount, uint256 totalClaimedAmount, GiftStatus status) =
-            giftCardCenter.getMutilGiftClaimInfo(giftId);
+            giftCardCenter.getMultiGiftClaimInfo(giftId);
         assertEq(totalClaimedCount, 0, "totalClaimedCount should be 0");
         assertEq(totalClaimedAmount, 0, "totalClaimedAmount should be 0");
         assertEq(uint256(status), uint256(GiftStatus.Refunded), "GiftStatus should be Refunded");
@@ -135,7 +135,7 @@ contract CodeGiftCardCenterTest is Test {
 
     function testRefundOnlySender() public {
         bytes32 giftId = _createGiftCard(defaultCodeHash);
-        MutilGift memory gift = giftCardCenter.getMutilGift(giftId);
+        MultiGift memory gift = giftCardCenter.getMultiGift(giftId);
         vm.warp(gift.expireTime + 1 days + 1);
         vm.expectRevert(RefundUserNotSender.selector);
         vm.prank(bob);
@@ -167,7 +167,7 @@ contract CodeGiftCardCenterTest is Test {
 
     function testGiftHasBeenExpired() public {
         bytes32 giftId = _createGiftCard(defaultCodeHash);
-        MutilGift memory gift = giftCardCenter.getMutilGift(giftId);
+        MultiGift memory gift = giftCardCenter.getMultiGift(giftId);
         vm.warp(gift.expireTime + 1 days + 1);
         vm.expectRevert(GiftCardExpired.selector);
         vm.prank(manager);

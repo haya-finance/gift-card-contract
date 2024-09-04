@@ -23,7 +23,7 @@ struct SingleGift {
 
 /// @notice Struct representing a multi-recipient gift card
 /// @dev Contains information for gifts that can be claimed by multiple recipients
-struct MutilGift {
+struct MultiGift {
     address sender; // Address of the gift sender
     address token; // Address of the gift token
     uint256 amount; // Total amount of tokens in the gift
@@ -56,7 +56,7 @@ enum GiftStatus {
 }
 
 /// @notice Struct containing claim information for a multi-gift
-struct MutilGiftClaimInfo {
+struct MultiGiftClaimInfo {
     mapping(address => ClaimInfo) claimInfos; // Mapping of recipient addresses to their claim info
     address[] recipients; // Array of recipient addresses
     uint256 totalClaimedCount; // Total number of claims made
@@ -91,9 +91,9 @@ library GiftCardLib {
     }
 
     /// @notice Generates a unique identifier for a multi-gift
-    /// @param card The MutilGift struct
+    /// @param card The MultiGift struct
     /// @return bytes32 The unique identifier
-    function getMutilGiftId(MutilGift memory card) internal pure returns (bytes32) {
+    function getMultiGiftId(MultiGift memory card) internal pure returns (bytes32) {
         return keccak256(
             abi.encodePacked(
                 card.sender,
@@ -110,10 +110,10 @@ library GiftCardLib {
     }
 
     /// @notice Generates a unique identifier for a code-based multi-gift
-    /// @param card The MutilGift struct
+    /// @param card The MultiGift struct
     /// @param codeHash The hash of the gift code
     /// @return bytes32 The unique identifier
-    function getCodeGiftId(MutilGift memory card, bytes32 codeHash) internal pure returns (bytes32) {
+    function getCodeGiftId(MultiGift memory card, bytes32 codeHash) internal pure returns (bytes32) {
         return keccak256(
             abi.encodePacked(
                 card.sender,
