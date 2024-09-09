@@ -23,10 +23,10 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
     address public tokenValidators;
 
     /// @notice Mapping of gift IDs to MultiGift structs
-    mapping(bytes32 => MultiGift) public MultiGifts;
+    mapping(bytes32 => MultiGift) public multiGifts;
 
     /// @notice Mapping of gift IDs to MultiGiftClaimInfo structs
-    mapping(bytes32 => MultiGiftClaimInfo) public MultiGiftClaimInfos;
+    mapping(bytes32 => MultiGiftClaimInfo) public multiGiftClaimInfos;
 
     /// @notice Mapping of gift IDs to GasPaid structs
     mapping(bytes32 => GasPaid) public gasPaids;
@@ -104,8 +104,8 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         nonReentrant
         onlyRole(Constants.GIFT_SENDER_MANAGER_ROLE)
     {
-        MultiGift memory gift = MultiGifts[_giftId];
-        MultiGiftClaimInfo storage claimInfo = MultiGiftClaimInfos[_giftId];
+        MultiGift memory gift = multiGifts[_giftId];
+        MultiGiftClaimInfo storage claimInfo = multiGiftClaimInfos[_giftId];
 
         _checkGiftClaimAvailable(_account, _claimAmount, gift, claimInfo);
 
@@ -122,8 +122,8 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
      * @param _giftId The unique identifier of the gift to be refunded.
      */
     function refundGift(bytes32 _giftId) external whenNotPaused nonReentrant {
-        MultiGift memory gift = MultiGifts[_giftId];
-        MultiGiftClaimInfo storage claimInfo = MultiGiftClaimInfos[_giftId];
+        MultiGift memory gift = multiGifts[_giftId];
+        MultiGiftClaimInfo storage claimInfo = multiGiftClaimInfos[_giftId];
 
         _checkGiftRefundAvailable(msg.sender, gift, claimInfo);
 
@@ -144,7 +144,7 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
      * @return The MultiGift struct containing the gift details.
      */
     function getMultiGift(bytes32 _giftId) public view returns (MultiGift memory) {
-        return MultiGifts[_giftId];
+        return multiGifts[_giftId];
     }
 
     /**
@@ -159,7 +159,7 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         view
         returns (uint256 totalClaimedCount, uint256 totalClaimedAmount, GiftStatus status)
     {
-        MultiGiftClaimInfo storage info = MultiGiftClaimInfos[_giftId];
+        MultiGiftClaimInfo storage info = multiGiftClaimInfos[_giftId];
         return (info.totalClaimedCount, info.totalClaimedAmount, info.status);
     }
 
@@ -175,7 +175,7 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         view
         returns (uint256 claimedAmount, uint256 claimedTimestamp)
     {
-        MultiGiftClaimInfo storage info = MultiGiftClaimInfos[_giftId];
+        MultiGiftClaimInfo storage info = multiGiftClaimInfos[_giftId];
         return (info.claimInfos[_account].claimedAmount, info.claimInfos[_account].claimedTimestamp);
     }
 
@@ -389,10 +389,10 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
             message: _message
         });
         bytes32 giftId = gift.getMultiGiftId();
-        if (MultiGifts[giftId].sender != address(0)) {
+        if (multiGifts[giftId].sender != address(0)) {
             revert GiftIdAlreadyInUse();
         }
-        MultiGifts[giftId] = gift;
+        multiGifts[giftId] = gift;
         gasPaids[giftId] = GasPaid(gasToken, gasPrice);
         emit MultiGiftCreated(giftId, gift);
         return giftId;
