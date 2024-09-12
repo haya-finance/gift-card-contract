@@ -38,10 +38,9 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
 
     /// @notice Emitted when a code gift is claimed
     /// @param giftId The unique identifier of the gift
-    /// @param codeHash The hash of the gift code
     /// @param recipient The address of the recipient claiming the gift
     /// @param amount The amount of tokens claimed
-    event CodeGiftClaimed(bytes32 indexed giftId, bytes32 indexed codeHash, address indexed recipient, uint256 amount);
+    event CodeGiftClaimed(bytes32 indexed giftId, address indexed recipient, uint256 amount);
 
     /// @notice Emitted when a code gift is refunded
     /// @param giftId The unique identifier of the gift
@@ -91,24 +90,37 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         return _createGift(msg.sender, _codeHash, _token, _amount, _dividendType, _splitCount, _skin, _message);
     }
 
+    // function batchClaimGift()
     /**
      * @dev Claims a gift for a specific account.
-     * @param _codeHash The hash of the gift card code.
+     * @param _giftId The hash of the gift card code.
      * @param _account The address of the account claiming the gift.
      * @param _claimAmount The amount to be claimed.
      */
-    function claimGift(bytes32 _codeHash, address _account, uint256 _claimAmount)
+    function claimGift(bytes32 _giftId, address _account, uint256 _claimAmount)
         external
         whenNotPaused
         nonReentrant
         onlyRole(Constants.GIFT_SENDER_MANAGER_ROLE)
     {
-        bytes32 giftId = getLastGiftCodePair(_codeHash);
-        if (giftId == bytes32(0)) {
-            revert GiftIdNotExists();
+        _clainGift(_giftId, _account, _claimAmount);
+    }
+
+    function batchClaimGift(bytes32[] calldata _giftIds, address[] calldata _accounts, uint256[] calldata _claimAmounts)  external
+        whenNotPaused
+        nonReentrant
+        onlyRole(Constants.GIFT_SENDER_MANAGER_ROLE) {
+        if (_giftIds.length != _accounts.length || _giftIds.length != _claimAmounts.length) {
+            revert InvalidParamsLength();
         }
-        MultiGift memory gift = multiGifts[giftId];
-        MultiGiftClaimInfo storage claimInfo = multiGiftClaimInfos[giftId];
+        for (uint256 i = 0; i < _giftIds.length; i++) {
+            _clainGift(_giftIds[i], _accounts[i], _claimAmounts[i]);
+        }
+    }
+
+    function _clainGift(bytes32 _giftId, address _account, uint256 _claimAmount) internal {
+        MultiGift memory gift = multiGifts[_giftId];
+        MultiGiftClaimInfo storage claimInfo = multiGiftClaimInfos[_giftId];
         _checkGiftClaimAvailable(_account, _claimAmount, gift, claimInfo);
 
         claimInfo.claimInfos[_account].claimedAmount = _claimAmount;
@@ -116,8 +128,9 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         claimInfo.totalClaimedCount += 1;
         claimInfo.totalClaimedAmount += _claimAmount;
         IERC20(gift.token).safeTransfer(_account, _claimAmount);
-        emit CodeGiftClaimed(giftId, _codeHash, _account, _claimAmount);
+        emit CodeGiftClaimed(_giftId, _account, _claimAmount);
     }
+
 
     /**
      * @dev Refunds an unclaimed gift to the sender.
@@ -147,6 +160,17 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
      */
     function getMultiGift(bytes32 _giftId) public view returns (MultiGift memory) {
         return multiGifts[_giftId];
+    }
+
+    /**
+     * @dev Retrieves the latest gift ID and MultiGift information for a given code hash.
+     * @param _codeHash The hash of the gift card code.
+     * @return bytes32 The latest gift ID associated with the code hash.
+     * @return MultiGift The MultiGift struct containing the gift information.
+     */
+    function getLatestCodeHashMultiGift(bytes32 _codeHash) public view returns (bytes32 , MultiGift memory) {
+        bytes32 giftId = giftCodePairs[_codeHash][giftCodePairs[_codeHash].length - 1];
+        return (giftId, multiGifts[giftId]);
     }
 
     /**

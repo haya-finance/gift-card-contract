@@ -104,6 +104,19 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         nonReentrant
         onlyRole(Constants.GIFT_SENDER_MANAGER_ROLE)
     {
+        _claimGift(_giftId, _account, _claimAmount);
+    }
+
+    function batchClaimGift(bytes32[] calldata _giftIds, address[] calldata _accounts, uint256[] calldata _claimAmounts) external whenNotPaused nonReentrant {
+        if (_giftIds.length != _accounts.length || _giftIds.length != _claimAmounts.length) {
+            revert InvalidParamsLength();
+        }
+        for (uint256 i = 0; i < _giftIds.length; i++) {
+            _claimGift(_giftIds[i], _accounts[i], _claimAmounts[i]);
+        }
+    }
+
+    function _claimGift(bytes32 _giftId, address _account, uint256 _claimAmount) internal {
         MultiGift memory gift = multiGifts[_giftId];
         MultiGiftClaimInfo storage claimInfo = multiGiftClaimInfos[_giftId];
 
@@ -116,7 +129,6 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         IERC20(gift.token).safeTransfer(_account, _claimAmount);
         emit MultiGiftClaimed(_giftId, _account, _claimAmount);
     }
-
     /**
      * @dev Refunds an unclaimed gift to the sender.
      * @param _giftId The unique identifier of the gift to be refunded.

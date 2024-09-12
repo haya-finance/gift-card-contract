@@ -101,6 +101,24 @@ contract SingleGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         nonReentrant
         onlyRole(Constants.GIFT_SENDER_MANAGER_ROLE)
     {
+        _claimGift(_giftId, _account);
+    }
+
+    function batchClaimGift(bytes32[] calldata _giftIds, address[] calldata _accounts) 
+        external
+        whenNotPaused
+        nonReentrant
+        onlyRole(Constants.GIFT_SENDER_MANAGER_ROLE) 
+    {
+        if (_giftIds.length != _accounts.length) {
+            revert InvalidParamsLength();
+        }
+        for (uint256 i = 0; i < _giftIds.length; i++) {
+            _claimGift(_giftIds[i], _accounts[i]);
+        }
+    }
+
+    function _claimGift(bytes32 _giftId, address _account) internal {
         SingleGift memory gift = singleGifts[_giftId];
         SingleGiftClaimInfo storage claimInfo = singleGiftClaimInfos[_giftId];
         if (claimInfo.recipient != address(0)) {

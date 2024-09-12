@@ -57,3 +57,5 @@ error GiftIdAlreadyInUse();
 
 /// @notice Error thrown when the gift ID does not exist
 error GiftIdNotExists();
+
+error InvalidParamsLength();

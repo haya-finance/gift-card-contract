@@ -14,7 +14,7 @@ contract DeployScript is Script {
     address owner = vm.envAddress("OWNER");
     address hayaToken = vm.envAddress("HAYA_CONTRACT");
     uint256 priceForGas = vm.envUint("PER_GIFT_CARD_GAS");
-    bytes32 codeSalt = 0x0000000000000000000000000000000000000000000000000000000000000002;
+    bytes32 codeSalt = 0x0000000000000000000000000000000000000000000000000000000000000005;
     address gasOracle;
     address tokenValidators;
 
