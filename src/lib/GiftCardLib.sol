@@ -25,6 +25,7 @@ struct SingleGift {
 /// @dev Contains information for gifts that can be claimed by multiple recipients
 struct MultiGift {
     address sender; // Address of the gift sender
+    uint256 groupId; // Group ID of the gift
     address token; // Address of the gift token
     uint256 amount; // Total amount of tokens in the gift
     DividendType dividendType; // Type of distribution (Fixed or Random)

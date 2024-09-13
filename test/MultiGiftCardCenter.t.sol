@@ -42,7 +42,7 @@ contract MultiGiftCardCenterTest is Test {
         deal(address(gasToken), alice, 1000 ether);
         vm.startPrank(alice);
         gasToken.approve(address(giftCardCenter), type(uint256).max);
-        bytes32 giftId = giftCardCenter.createGift(address(gasToken), 10 ether, DividendType.Fixed, 100, "skin", "msg");
+        bytes32 giftId = giftCardCenter.createGift(0,address(gasToken), 10 ether, DividendType.Fixed, 100, "skin", "msg");
         vm.stopPrank();
 
         assertEq(
@@ -111,7 +111,7 @@ contract MultiGiftCardCenterTest is Test {
         gasToken.approve(address(giftCardCenter), 1000 ether);
         vm.expectRevert(InvalidParamsToken.selector);
         vm.prank(alice);
-        giftCardCenter.createGift(address(invalidToken), 10 ether, DividendType.Fixed, 100, "skin", "msg");
+        giftCardCenter.createGift(0, address(invalidToken), 10 ether, DividendType.Fixed, 100, "skin", "msg");
     }
 
     function testGiftHasBeenClaimed() public {
@@ -137,7 +137,7 @@ contract MultiGiftCardCenterTest is Test {
         vm.prank(alice);
         gasToken.approve(address(giftCardCenter), type(uint256).max);
         vm.prank(alice);
-        bytes32 giftId = giftCardCenter.createGift(address(gasToken), 10 ether, DividendType.Fixed, 100, "skin", "msg");
+        bytes32 giftId = giftCardCenter.createGift(0,address(gasToken), 10 ether, DividendType.Fixed, 100, "skin", "msg");
         return giftId;
     }
 }

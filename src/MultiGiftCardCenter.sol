@@ -73,6 +73,7 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
 
     /**
      * @dev Creates a new gift card.
+     * @param _groupId The group ID for the gift.
      * @param _token The token address for the gift.
      * @param _amount The amount of tokens for the gift.
      * @param _dividendType The type of dividend for the gift.
@@ -82,6 +83,7 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
      * @return The unique identifier of the created gift.
      */
     function createGift(
+        uint256 _groupId,
         address _token,
         uint256 _amount,
         DividendType _dividendType,
@@ -89,7 +91,7 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         string memory _skin,
         string memory _message
     ) external whenNotPaused nonReentrant returns (bytes32) {
-        return _createGift(msg.sender, _token, _amount, _dividendType, _splitCount, _skin, _message);
+        return _createGift(msg.sender, _groupId, _token, _amount, _dividendType, _splitCount, _skin, _message);
     }
 
     /**
@@ -371,6 +373,7 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
      */
     function _createGift(
         address _sender,
+        uint256 _groupId,
         address _token,
         uint256 _amount,
         DividendType _dividendType,
@@ -391,6 +394,7 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         }
         MultiGift memory gift = MultiGift({
             sender: _sender,
+            groupId: _groupId,
             token: _token,
             amount: _amount,
             dividendType: _dividendType,

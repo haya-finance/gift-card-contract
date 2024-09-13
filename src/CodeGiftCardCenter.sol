@@ -452,6 +452,7 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         }
         MultiGift memory gift = MultiGift({
             sender: _sender,
+            groupId: 0,
             token: _token,
             amount: _amount,
             dividendType: _dividendType,
