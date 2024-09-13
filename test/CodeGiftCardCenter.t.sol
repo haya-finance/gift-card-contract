@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
-
+import "forge-std/Script.sol";
 import {Test} from "forge-std/Test.sol";
 import {CodeGiftCardCenter} from "../src/CodeGiftCardCenter.sol";
 import {GasOracle} from "../src/GasOracle.sol";
@@ -70,11 +70,12 @@ contract CodeGiftCardCenterTest is Test {
 
     function testClaimGiftCard() public {
         bytes32 giftId = _createGiftCard(defaultCodeHash);
-        vm.prank(manager);
-        giftCardCenter.claimGift(defaultCodeHash, bob, 10 ether);
 
+        vm.prank(manager);
+        giftCardCenter.claimGift(giftId, bob, 10 ether);
         (uint256 totalClaimedCount, uint256 totalClaimedAmount, GiftStatus status) =
             giftCardCenter.getMultiGiftClaimInfo(giftId);
+
         assertEq(totalClaimedCount, 1, "totalClaimedCount should be 1");
         assertEq(totalClaimedAmount, 10 ether, "totalClaimedAmount should be 10 ether");
         assertEq(uint256(status), uint256(GiftStatus.None), "GiftStatus should be None");
@@ -157,10 +158,10 @@ contract CodeGiftCardCenterTest is Test {
     }
 
     function testGiftHasBeenClaimed() public {
-        _createGiftCard(defaultCodeHash);
+        bytes32 giftId = _createGiftCard(defaultCodeHash);
         vm.prank(manager);
-        giftCardCenter.claimGift(defaultCodeHash, bob, 1 ether);
-        vm.expectRevert(GiftHasBeenClaimed.selector);
+        giftCardCenter.claimGift(giftId, bob, 1 ether);
+        vm.expectRevert(ClaimAmountExceed.selector);
         vm.prank(manager);
         giftCardCenter.claimGift(defaultCodeHash, bob, 1 ether);
     }

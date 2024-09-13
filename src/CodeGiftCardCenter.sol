@@ -168,7 +168,7 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
      * @return bytes32 The latest gift ID associated with the code hash.
      * @return MultiGift The MultiGift struct containing the gift information.
      */
-    function getLatestCodeHashMultiGift(bytes32 _codeHash) public view returns (bytes32 , MultiGift memory) {
+    function getLatestCodeHashMultiGift(bytes32 _codeHash) public view returns (bytes32, MultiGift memory) {
         bytes32 giftId = giftCodePairs[_codeHash][giftCodePairs[_codeHash].length - 1];
         return (giftId, multiGifts[giftId]);
     }
