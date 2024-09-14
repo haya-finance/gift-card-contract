@@ -106,10 +106,20 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         _clainGift(_giftId, _account, _claimAmount);
     }
 
-    function batchClaimGift(bytes32[] calldata _giftIds, address[] calldata _accounts, uint256[] calldata _claimAmounts)  external
+    /**
+     * @dev Batch claims gifts for multiple accounts.
+     * @param _giftIds An array of unique identifiers of the gifts.
+     * @param _accounts An array of addresses of the accounts claiming the gifts.
+     * @param _claimAmounts An array of amounts to be claimed for each gift.
+     * @notice This function allows claiming multiple gifts in a single transaction.
+     * @notice The lengths of _giftIds, _accounts, and _claimAmounts arrays must be equal.
+     */
+    function batchClaimGift(bytes32[] calldata _giftIds, address[] calldata _accounts, uint256[] calldata _claimAmounts)
+        external
         whenNotPaused
         nonReentrant
-        onlyRole(Constants.GIFT_SENDER_MANAGER_ROLE) {
+        onlyRole(Constants.GIFT_SENDER_MANAGER_ROLE)
+    {
         if (_giftIds.length != _accounts.length || _giftIds.length != _claimAmounts.length) {
             revert InvalidParamsLength();
         }
@@ -118,6 +128,12 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         }
     }
 
+    /**
+     * @dev Internal function to claim a gift for a specific account.
+     * @param _giftId The unique identifier of the gift.
+     * @param _account The address of the account claiming the gift.
+     * @param _claimAmount The amount to be claimed.
+     */
     function _clainGift(bytes32 _giftId, address _account, uint256 _claimAmount) internal {
         MultiGift memory gift = multiGifts[_giftId];
         MultiGiftClaimInfo storage claimInfo = multiGiftClaimInfos[_giftId];
@@ -130,7 +146,6 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         IERC20(gift.token).safeTransfer(_account, _claimAmount);
         emit CodeGiftClaimed(_giftId, _account, _claimAmount);
     }
-
 
     /**
      * @dev Refunds an unclaimed gift to the sender.

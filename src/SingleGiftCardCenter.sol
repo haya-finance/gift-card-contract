@@ -104,11 +104,18 @@ contract SingleGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         _claimGift(_giftId, _account);
     }
 
-    function batchClaimGift(bytes32[] calldata _giftIds, address[] calldata _accounts) 
+    /**
+     * @dev Batch claims gifts for multiple accounts.
+     * @param _giftIds An array of unique identifiers of the gifts.
+     * @param _accounts An array of addresses of the accounts claiming the gifts.
+     * @notice This function allows claiming multiple gifts in a single transaction.
+     * @notice The lengths of _giftIds and _accounts arrays must be equal.
+     */
+    function batchClaimGift(bytes32[] calldata _giftIds, address[] calldata _accounts)
         external
         whenNotPaused
         nonReentrant
-        onlyRole(Constants.GIFT_SENDER_MANAGER_ROLE) 
+        onlyRole(Constants.GIFT_SENDER_MANAGER_ROLE)
     {
         if (_giftIds.length != _accounts.length) {
             revert InvalidParamsLength();
@@ -118,6 +125,11 @@ contract SingleGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         }
     }
 
+    /**
+     * @dev Internal function to claim a gift for a specific account.
+     * @param _giftId The unique identifier of the gift.
+     * @param _account The address of the account claiming the gift.
+     */
     function _claimGift(bytes32 _giftId, address _account) internal {
         SingleGift memory gift = singleGifts[_giftId];
         SingleGiftClaimInfo storage claimInfo = singleGiftClaimInfos[_giftId];

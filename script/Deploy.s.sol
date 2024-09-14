@@ -8,13 +8,12 @@ import {SingleGiftCardCenter} from "../src/SingleGiftCardCenter.sol";
 import {MultiGiftCardCenter} from "../src/MultiGiftCardCenter.sol";
 import {CodeGiftCardCenter} from "../src/CodeGiftCardCenter.sol";
 
-
 contract DeployScript is Script {
     uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
     address owner = vm.envAddress("OWNER");
     address hayaToken = vm.envAddress("HAYA_CONTRACT");
     uint256 priceForGas = vm.envUint("PER_GIFT_CARD_GAS");
-    bytes32 codeSalt = 0x0000000000000000000000000000000000000000000000000000000000000006;
+    bytes32 codeSalt = 0x0000000000000000000000000000000000000000000000000000000000000007;
     address gasOracle;
     address tokenValidators;
 
@@ -34,37 +33,31 @@ contract DeployScript is Script {
         console.log("******** Deploying.... *********");
         console.log("********************************");
         console.log();
-        GasOracle oracle =
-            new GasOracle{salt: codeSalt}(owner);
+        GasOracle oracle = new GasOracle{salt: codeSalt}(owner);
         _initGasOracleContract(oracle);
         console.log("GasOracle:", address(oracle));
         console.log();
         gasOracle = address(oracle);
-        
-        TokenValidators validator =
-            new TokenValidators{salt: codeSalt}(owner);
+
+        TokenValidators validator = new TokenValidators{salt: codeSalt}(owner);
         _initTokenValidatorsContract(validator);
         console.log("TokenValidators:", address(validator));
         console.log();
         tokenValidators = address(validator);
 
-        SingleGiftCardCenter singleCenter =
-            new SingleGiftCardCenter{salt: codeSalt}(owner);
+        SingleGiftCardCenter singleCenter = new SingleGiftCardCenter{salt: codeSalt}(owner);
 
         _initSingleGiftCardCenterContract(singleCenter);
         console.log("SingleGiftCardCenter:", address(singleCenter));
         console.log();
 
-
-        MultiGiftCardCenter multiCenter =
-            new MultiGiftCardCenter{salt: codeSalt}(owner);
+        MultiGiftCardCenter multiCenter = new MultiGiftCardCenter{salt: codeSalt}(owner);
 
         _initMultiGiftCardCenterContract(multiCenter);
         console.log("MultiGiftCardCenter:", address(multiCenter));
         console.log();
 
-        CodeGiftCardCenter codeCenter =
-            new CodeGiftCardCenter{salt: codeSalt}(owner);
+        CodeGiftCardCenter codeCenter = new CodeGiftCardCenter{salt: codeSalt}(owner);
 
         _initCodeGiftCardCenterContract(codeCenter);
         console.log("CodeGiftCardCenter:", address(codeCenter));
@@ -84,6 +77,7 @@ contract DeployScript is Script {
         oracle.updateToken(hayaToken);
         oracle.updatePrice(priceForGas);
     }
+
     function _initTokenValidatorsContract(TokenValidators validator) internal {
         console.log("********************************");
         console.log("******** Initializing.... *********");
@@ -93,6 +87,7 @@ contract DeployScript is Script {
         console.log("********************************");
         validator.addValidToken(hayaToken);
     }
+
     function _initSingleGiftCardCenterContract(SingleGiftCardCenter center) internal {
         console.log("********************************");
         console.log("******** Initializing.... *********");
@@ -103,6 +98,7 @@ contract DeployScript is Script {
         center.setGasOracle(gasOracle);
         center.setTokenValidators(tokenValidators);
     }
+
     function _initMultiGiftCardCenterContract(MultiGiftCardCenter center) internal {
         console.log("********************************");
         console.log("******** Initializing.... *********");
@@ -113,6 +109,7 @@ contract DeployScript is Script {
         center.setGasOracle(gasOracle);
         center.setTokenValidators(tokenValidators);
     }
+
     function _initCodeGiftCardCenterContract(CodeGiftCardCenter center) internal {
         console.log("********************************");
         console.log("******** Initializing.... *********");
