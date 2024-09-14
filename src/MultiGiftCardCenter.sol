@@ -432,7 +432,7 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         if (!ITokenValidators(tokenValidators).validateToken(_token)) {
             revert InvalidParamsToken();
         }
-        if (_amount < Constants.MIN_GIFT_AMOUNT) {
+        if (_amount / _splitCount < Constants.MIN_GIFT_AMOUNT) {
             revert InvalidParamsAmount();
         }
         if (_amount % _splitCount != 0) {
