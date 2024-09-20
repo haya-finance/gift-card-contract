@@ -519,7 +519,7 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         if (_amount / _splitCount % Constants.MIN_GIFT_AMOUNT != 0) {
             revert InvalidParamsAmountSplit();
         }
-        if (_splitCount < 2 || _splitCount > Constants.MAX_SPLIT_COUNT) {
+        if (_splitCount < 1 || _splitCount > Constants.MAX_SPLIT_COUNT) {
             revert InvalidParamsSplitNum();
         }
         if (bytes(_skin).length > Constants.MAX_SKIN_STRING_LENGTH) {
