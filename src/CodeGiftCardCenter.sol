@@ -223,6 +223,25 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
     }
 
     /**
+     * @dev Retrieves the claim details for a range of recipients.
+     * @param _giftId The unique identifier of the gift.
+     * @param _start The starting index of the recipients.
+     * @param _end The ending index of the recipients.
+     * @return recipients An array of recipient addresses.
+     * @return claimInfos An array of ClaimInfo structs.
+     */
+    function getGiftCardClaimDetail(bytes32 _giftId, uint256 _start, uint256 _end) public view returns (address[] memory, ClaimInfo[] memory) {
+        MultiGiftClaimInfo storage info = multiGiftClaimInfos[_giftId];
+        address[] memory recipients = new address[](_end - _start + 1);
+        ClaimInfo[] memory claimInfos = new ClaimInfo[](_end - _start + 1);
+        for (uint256 i = _start; i <= _end; i++) {
+            recipients[i - _start] = info.recipients[i];
+            claimInfos[i - _start] = info.claimInfos[recipients[i]];
+        }
+        return (recipients, claimInfos);
+    }
+
+    /**
      * @dev Checks if a code hash is available for use.
      * @param _codeHash The hash of the gift card code to check.
      * @return A boolean indicating whether the code hash is available.

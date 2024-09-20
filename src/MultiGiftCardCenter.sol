@@ -217,6 +217,25 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
     }
 
     /**
+     * @dev Retrieves the claim details for a range of recipients.
+     * @param _giftId The unique identifier of the gift.
+     * @param _start The starting index of the recipients.
+     * @param _end The ending index of the recipients.
+     * @return recipients An array of recipient addresses.
+     * @return claimInfos An array of ClaimInfo structs.
+     */
+    function getGiftCardClaimDetail(bytes32 _giftId, uint256 _start, uint256 _end) public view returns (address[] memory, ClaimInfo[] memory) {
+        MultiGiftClaimInfo storage info = multiGiftClaimInfos[_giftId];
+        address[] memory recipients = new address[](_end - _start + 1);
+        ClaimInfo[] memory claimInfos = new ClaimInfo[](_end - _start + 1);
+        for (uint256 i = _start; i <= _end; i++) {
+            recipients[i - _start] = info.recipients[i];
+            claimInfos[i - _start] = info.claimInfos[recipients[i]];
+        }
+        return (recipients, claimInfos);
+    }
+    
+    /**
      * @dev Retrieves the ID of a single gift card.
      * @param _gift The MultiGift struct representing the gift card.
      * @return The ID of the gift card as a bytes32 value.
