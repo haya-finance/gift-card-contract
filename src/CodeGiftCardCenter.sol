@@ -8,7 +8,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IGasOracle} from "./interfaces/IGasOracle.sol";
 import {ITokenValidators} from "./interfaces/ITokenValidators.sol";
-import {MultiGift, MultiGiftClaimInfo, GiftCardLib, DividendType, GasPaid, GiftStatus} from "./lib/GiftCardLib.sol";
+import {MultiGift, MultiGiftClaimInfo, ClaimInfo, GiftCardLib, DividendType, GasPaid, GiftStatus} from "./lib/GiftCardLib.sol";
 import {Constants} from "./lib/Constants.sol";
 import "./lib/Error.sol";
 
@@ -103,7 +103,7 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
         nonReentrant
         onlyRole(Constants.GIFT_SENDER_MANAGER_ROLE)
     {
-        _clainGift(_giftId, _account, _claimAmount);
+        _claimGift(_giftId, _account, _claimAmount);
     }
 
     /**
@@ -124,7 +124,7 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
             revert InvalidParamsLength();
         }
         for (uint256 i = 0; i < _giftIds.length; i++) {
-            _clainGift(_giftIds[i], _accounts[i], _claimAmounts[i]);
+            _claimGift(_giftIds[i], _accounts[i], _claimAmounts[i]);
         }
     }
 
@@ -134,13 +134,15 @@ contract CodeGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
      * @param _account The address of the account claiming the gift.
      * @param _claimAmount The amount to be claimed.
      */
-    function _clainGift(bytes32 _giftId, address _account, uint256 _claimAmount) internal {
+    function _claimGift(bytes32 _giftId, address _account, uint256 _claimAmount) internal {
         MultiGift memory gift = multiGifts[_giftId];
         MultiGiftClaimInfo storage claimInfo = multiGiftClaimInfos[_giftId];
         _checkGiftClaimAvailable(_account, _claimAmount, gift, claimInfo);
-
-        claimInfo.claimInfos[_account].claimedAmount = _claimAmount;
-        claimInfo.claimInfos[_account].claimedTimestamp = block.timestamp;
+        ClaimInfo memory claim = ClaimInfo({
+            claimedAmount: _claimAmount,
+            claimedTimestamp: block.timestamp
+        });
+        claimInfo.claimInfos[_account] = claim;
         claimInfo.totalClaimedCount += 1;
         claimInfo.totalClaimedAmount += _claimAmount;
         IERC20(gift.token).safeTransfer(_account, _claimAmount);

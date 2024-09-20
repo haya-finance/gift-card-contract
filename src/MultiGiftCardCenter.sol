@@ -8,7 +8,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IGasOracle} from "./interfaces/IGasOracle.sol";
 import {ITokenValidators} from "./interfaces/ITokenValidators.sol";
-import {MultiGift, MultiGiftClaimInfo, GiftCardLib, DividendType, GasPaid, GiftStatus} from "./lib/GiftCardLib.sol";
+import {MultiGift, MultiGiftClaimInfo, ClaimInfo, GiftCardLib, DividendType, GasPaid, GiftStatus} from "./lib/GiftCardLib.sol";
 import {Constants} from "./lib/Constants.sol";
 import "./lib/Error.sol";
 
@@ -142,8 +142,12 @@ contract MultiGiftCardCenter is AccessControl, ReentrancyGuard, Pausable {
 
         _checkGiftClaimAvailable(_account, _claimAmount, gift, claimInfo);
 
-        claimInfo.claimInfos[_account].claimedAmount = _claimAmount;
-        claimInfo.claimInfos[_account].claimedTimestamp = block.timestamp;
+        ClaimInfo memory claim = ClaimInfo({
+            claimedAmount: _claimAmount,
+            claimedTimestamp: block.timestamp
+        });
+        claimInfo.claimInfos[_account] = claim;
+
         claimInfo.totalClaimedCount += 1;
         claimInfo.totalClaimedAmount += _claimAmount;
         IERC20(gift.token).safeTransfer(_account, _claimAmount);
