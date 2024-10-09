@@ -11,7 +11,7 @@ library Constants {
     uint256 public constant GIFT_CARD_EXPIRE_DURATION = 1 days;
 
     /// @notice Minimum amount allowed for a gift
-    uint256 public constant MIN_GIFT_AMOUNT = 10 ** 6;
+    uint256 public constant MIN_GIFT_AMOUNT = 10 ** 4;
 
     /// @notice Maximum number of splits allowed for a multi-recipient gift
     uint256 public constant MAX_SPLIT_COUNT = 2000;
